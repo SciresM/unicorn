@@ -137,7 +137,7 @@ bool uc_arch_supported(uc_arch arch)
 
 
 UNICORN_EXPORT
-uc_err uc_open(uc_arch arch, uc_mode mode, uc_engine **result)
+uc_err uc_open(uc_arch arch, uc_mode mode, uc_engine **result, int cpu_index)
 {
     struct uc_struct *uc;
 
@@ -151,6 +151,7 @@ uc_err uc_open(uc_arch arch, uc_mode mode, uc_engine **result)
         uc->errnum = UC_ERR_OK;
         uc->arch = arch;
         uc->mode = mode;
+        uc->cpu_index = cpu_index;
 
         // uc->ram_list = { .blocks = QTAILQ_HEAD_INITIALIZER(ram_list.blocks) };
         uc->ram_list.blocks.tqh_first = NULL;
@@ -419,7 +420,7 @@ uc_err uc_mem_read(uc_engine *uc, uint64_t address, void *_bytes, size_t size)
     uint8_t *bytes = _bytes;
 
     if (uc->mem_redirect) {
-        address = uc->mem_redirect(address);
+        address = uc->mem_redirect(uc, address);
     }
 
     if (!check_mem_area(uc, address, size))
@@ -452,7 +453,7 @@ uc_err uc_mem_write(uc_engine *uc, uint64_t address, const void *_bytes, size_t 
     const uint8_t *bytes = _bytes;
 
     if (uc->mem_redirect) {
-        address = uc->mem_redirect(address);
+        address = uc->mem_redirect(uc, address);
     }
 
     if (!check_mem_area(uc, address, size))
@@ -734,7 +735,7 @@ uc_err uc_mem_map(uc_engine *uc, uint64_t address, size_t size, uint32_t perms)
     uc_err res;
 
     if (uc->mem_redirect) {
-        address = uc->mem_redirect(address);
+        address = uc->mem_redirect(uc, address);
     }
 
     res = mem_map_check(uc, address, size, perms);
@@ -751,7 +752,7 @@ uc_err uc_mmio_map(uc_engine *uc, uint64_t address, size_t size, uc_cb_mmio_read
     struct mmio_data *data;
 
     if (uc->mem_redirect) {
-        address = uc->mem_redirect(address);
+        address = uc->mem_redirect(uc, address);
     }
 
     res = mem_map_check(uc, address, size, UC_PROT_ALL);
@@ -772,7 +773,7 @@ uc_err uc_mem_map_ptr(uc_engine *uc, uint64_t address, size_t size, uint32_t per
         return UC_ERR_ARG;
 
     if (uc->mem_redirect) {
-        address = uc->mem_redirect(address);
+        address = uc->mem_redirect(uc, address);
     }
 
     res = mem_map_check(uc, address, size, perms);
@@ -925,7 +926,7 @@ uc_err uc_mem_protect(struct uc_struct *uc, uint64_t address, size_t size, uint3
         return UC_ERR_ARG;
 
     if (uc->mem_redirect) {
-        address = uc->mem_redirect(address);
+        address = uc->mem_redirect(uc, address);
     }
 
     // check that user's entire requested block is mapped
@@ -982,7 +983,7 @@ uc_err uc_mem_unmap(struct uc_struct *uc, uint64_t address, size_t size)
         return UC_ERR_ARG;
 
     if (uc->mem_redirect) {
-        address = uc->mem_redirect(address);
+        address = uc->mem_redirect(uc, address);
     }
 
     // check that user's entire requested block is mapped
@@ -1020,7 +1021,7 @@ MemoryRegion *memory_mapping(struct uc_struct* uc, uint64_t address)
         return NULL;
 
     if (uc->mem_redirect) {
-        address = uc->mem_redirect(address);
+        address = uc->mem_redirect(uc, address);
     }
 
     // try with the cache index first
@@ -1298,4 +1299,20 @@ uc_err uc_context_restore(uc_engine *uc, uc_context *context)
     struct uc_context *_context = context;
     memcpy(uc->cpu->env_ptr, _context->data, _context->size);
     return UC_ERR_OK;
+}
+
+UNICORN_EXPORT
+void uc_raise_irq(uc_engine *uc)
+{
+    uc->cpu->interrupt_request = 2;//CPU_INTERRUPT_HARD;
+}
+
+UNICORN_EXPORT
+uint64_t uc_redirect(uc_engine *uc, uint64_t address)
+{
+    if (uc->mem_redirect) {
+        address = uc->mem_redirect(uc, address);
+    }
+    
+    return address;
 }

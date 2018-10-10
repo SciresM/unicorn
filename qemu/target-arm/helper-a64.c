@@ -442,12 +442,19 @@ uint64_t HELPER(crc32c_64)(uint64_t acc, uint64_t val, uint32_t bytes)
 /* Handle a CPU exception.  */
 void aarch64_cpu_do_interrupt(CPUState *cs)
 {
+    if (cs->exception_index == 1) // SMC
+    {
+        return;
+    }
+
     CPUARMState *env = cs->env_ptr;
     ARMCPU *cpu = ARM_CPU(env->uc, cs);
     unsigned int new_el = arm_excp_target_el(cs, cs->exception_index);
     target_ulong addr = env->cp15.vbar_el[new_el];
     unsigned int new_mode = aarch64_pstate_mode(new_el, true);
     int i;
+    
+   
 
     if (arm_current_el(env) < new_el) {
         if (env->aarch64) {

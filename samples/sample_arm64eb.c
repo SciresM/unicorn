@@ -36,7 +36,7 @@ static void test_arm64(void)
     printf("Emulate ARM64 Big-Endian code\n");
 
     // Initialize emulator in ARM mode
-    err = uc_open(UC_ARCH_ARM64, UC_MODE_ARM + UC_MODE_BIG_ENDIAN, &uc);
+    err = uc_open(UC_ARCH_ARM64, UC_MODE_ARM + UC_MODE_BIG_ENDIAN, &uc, 0);
     if (err) {
         printf("Failed on uc_open() with error returned: %u (%s)\n",
                 err, uc_strerror(err));

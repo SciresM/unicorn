@@ -21,7 +21,7 @@ typedef uint64_t mipsreg_t;
 typedef uint32_t mipsreg_t;
 #endif
 
-static uint64_t mips_mem_redirect(uint64_t address)
+static uint64_t mips_mem_redirect(struct uc_struct *uc, uint64_t address)
 {
     // kseg0 range masks off high address bit
     if (address >= 0x80000000 && address <= 0x9fffffff)

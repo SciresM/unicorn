@@ -100,7 +100,7 @@ int main() {
     uc_err err;
 
     // Initialize emulator in ARM mode
-    err = uc_open(UC_ARCH_ARM, UC_MODE_ARM, &uc);
+    err = uc_open(UC_ARCH_ARM, UC_MODE_ARM, &uc, 0);
     if (err) {
         printf("not ok - Failed on uc_open() with error: %s\n", uc_strerror(err));
         return 1;

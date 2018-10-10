@@ -47,7 +47,7 @@ static int arm64_uc_to_qemu_cp_regs(unsigned int regid)
     for(i=0; i < sizeof(ARM64_CP_REGS_INFO); i++){
         tmp = &ARM64_CP_REGS_INFO[i];
         if (regid==tmp->uc_reg_id){   
-            return ENCODE_AA64_CP_REG(tmp->cp, tmp->crn, tmp->crm, tmp->opc0, tmp->opc1, tmp->opc2);
+            return ENCODE_AA64_CP_REG(CP_REG_ARM64_SYSREG_CP, tmp->crn, tmp->crm, tmp->opc0, tmp->opc1, tmp->opc2);
         }
     }
 
@@ -317,6 +317,21 @@ int arm64_cpreg_write( struct uc_struct *uc,
     return 1;
 }
 
+hwaddr arm_cpu_get_phys_page_debug(CPUState *cs, vaddr addr);
+
+static uint64_t arm64_mem_redirect(struct uc_struct *uc, uint64_t address)
+{
+    //printf("redirect %016llx\n", address);
+    
+    // redirect vaddrs to paddrs
+    hwaddr phys_ptr = arm_cpu_get_phys_page_debug(uc->cpu, address);
+    //printf("redirect got %016llx\n", phys_ptr);
+    if (phys_ptr != 0xFFFFFFFFFFFFFFFF)
+        return phys_ptr;
+    // no redirect
+    return address;
+}
+
 DEFAULT_VISIBILITY
 #ifdef TARGET_WORDS_BIGENDIAN
 void arm64eb_uc_init(struct uc_struct* uc)
@@ -333,5 +348,6 @@ void arm64_uc_init(struct uc_struct* uc)
     uc->reg_reset = arm64_reg_reset;
     uc->set_pc = arm64_set_pc;
     uc->release = arm64_release;
+    uc->mem_redirect = arm64_mem_redirect;
     uc_common_init(uc);
 }

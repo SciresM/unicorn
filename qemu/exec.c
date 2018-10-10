@@ -415,7 +415,8 @@ void cpu_exec_init(CPUArchState *env, void *opaque)
     cpu->uc = uc;
     env->uc = uc;
 
-    cpu->cpu_index = 0;
+    printf("cpu index %u\n", uc->cpu_index);
+    cpu->cpu_index = uc->cpu_index;
     cpu->numa_node = 0;
     QTAILQ_INIT(&cpu->breakpoints);
     QTAILQ_INIT(&cpu->watchpoints);

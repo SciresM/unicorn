@@ -369,7 +369,7 @@ bool uc_arch_supported(uc_arch arch);
    for detailed error).
 */
 UNICORN_EXPORT
-uc_err uc_open(uc_arch arch, uc_mode mode, uc_engine **uc);
+uc_err uc_open(uc_arch arch, uc_mode mode, uc_engine **result, int cpu_index);
 
 /*
  Close a Unicorn engine instance.
@@ -753,6 +753,12 @@ uc_err uc_context_save(uc_engine *uc, uc_context *context);
 */
 UNICORN_EXPORT
 uc_err uc_context_restore(uc_engine *uc, uc_context *context);
+
+UNICORN_EXPORT
+void uc_raise_irq(uc_engine *uc);
+
+UNICORN_EXPORT
+uint64_t uc_redirect(uc_engine *uc, uint64_t address);
 
 #ifdef __cplusplus
 }

@@ -78,7 +78,7 @@ typedef void (*uc_readonly_mem_t)(MemoryRegion *mr, bool readonly);
 typedef bool (*uc_args_int_t)(int intno);
 
 // some architecture redirect virtual memory to physical memory like Mips
-typedef uint64_t (*uc_mem_redirect_t)(uint64_t address);
+typedef uint64_t (*uc_mem_redirect_t)(struct uc_struct *uc, uint64_t address);
 
 // validate if Unicorn supports hooking a given instruction
 typedef bool(*uc_insn_hook_validate)(uint32_t insn_enum);
@@ -248,6 +248,8 @@ struct uc_struct {
     uint32_t target_page_align;
     uint64_t next_pc;   // save next PC for some special cases
     bool hook_insert;	// insert new hook at begin of the hook list (append by default)
+    
+    int cpu_index;
 };
 
 // Metadata stub for the variable-size cpu context used with uc_context_*()

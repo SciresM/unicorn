@@ -37,7 +37,7 @@ static void test_sparc(void)
     printf("Emulate SPARC code\n");
 
     // Initialize emulator in Sparc mode
-    err = uc_open(UC_ARCH_SPARC, UC_MODE_SPARC32|UC_MODE_BIG_ENDIAN, &uc);
+    err = uc_open(UC_ARCH_SPARC, UC_MODE_SPARC32|UC_MODE_BIG_ENDIAN, &uc, 0);
     if (err) {
         printf("Failed on uc_open() with error returned: %u (%s)\n",
                 err, uc_strerror(err));

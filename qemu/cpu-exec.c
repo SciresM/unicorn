@@ -127,6 +127,9 @@ int cpu_exec(struct uc_struct *uc, CPUArchState *env)   // qq
                     ret = cpu->exception_index;
                     break;
 #else
+
+                    
+
                     bool catched = false;
                     // Unicorn: call registered interrupt callbacks
                     HOOK_FOREACH_VAR_DECLARE;
@@ -134,6 +137,10 @@ int cpu_exec(struct uc_struct *uc, CPUArchState *env)   // qq
                         ((uc_cb_hookintr_t)hook->callback)(uc, cpu->exception_index, hook->user_data);
                         catched = true;
                     }
+                    
+                    //if (!catched)
+                        cc->do_interrupt(cpu);
+                    
                     // Unicorn: If un-catched interrupt, stop executions.
                     if (!catched) {
                         cpu->halted = 1;
@@ -193,6 +200,7 @@ int cpu_exec(struct uc_struct *uc, CPUArchState *env)   // qq
                        and via longjmp via cpu_loop_exit.  */
                     if (cc->cpu_exec_interrupt(cpu, interrupt_request)) {
                         next_tb = 0;
+                        cpu->interrupt_request = 0;
                     }
                     /* Don't use the cached interrupt_request value,
                        do_interrupt may have updated the EXITTB flag. */

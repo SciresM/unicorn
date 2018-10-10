@@ -193,6 +193,8 @@ bool arm_cpu_exec_interrupt(CPUState *cs, int interrupt_request)
     CPUARMState *env = cs->env_ptr;
     CPUClass *cc = CPU_GET_CLASS(env->uc, cs);
     bool ret = false;
+    
+    //printf("interrupt %x\n", interrupt_request);
 
     if (interrupt_request & CPU_INTERRUPT_FIQ
         && arm_excp_unmasked(cs, EXCP_FIQ)) {
@@ -201,7 +203,8 @@ bool arm_cpu_exec_interrupt(CPUState *cs, int interrupt_request)
         ret = true;
     }
     if (interrupt_request & CPU_INTERRUPT_HARD
-        && arm_excp_unmasked(cs, EXCP_IRQ)) {
+        /*&& arm_excp_unmasked(cs, EXCP_IRQ)*/) {
+        //printf("doing interrupt %x\n", interrupt_request);
         cs->exception_index = EXCP_IRQ;
         cc->do_interrupt(cs);
         ret = true;

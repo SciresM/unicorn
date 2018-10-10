@@ -38,7 +38,7 @@ static void test_arm(void)
     printf("Emulate ARM Big-Endian code\n");
 
     // Initialize emulator in ARM mode
-    err = uc_open(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN, &uc);
+    err = uc_open(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN, &uc, 0);
     if (err) {
         printf("Failed on uc_open() with error returned: %u (%s)\n",
                 err, uc_strerror(err));
@@ -91,7 +91,7 @@ static void test_thumb(void)
     printf("Emulate THUMB code\n");
 
     // Initialize emulator in ARM mode
-    err = uc_open(UC_ARCH_ARM, UC_MODE_THUMB + UC_MODE_BIG_ENDIAN, &uc);
+    err = uc_open(UC_ARCH_ARM, UC_MODE_THUMB + UC_MODE_BIG_ENDIAN, &uc, 0);
     if (err) {
         printf("Failed on uc_open() with error returned: %u (%s)\n",
                 err, uc_strerror(err));

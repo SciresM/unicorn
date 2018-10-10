@@ -58,7 +58,7 @@ int main()
         ptrs[i] = &vals[i];
     }
 
-    if ((err = uc_open(UC_ARCH_X86, UC_MODE_64, &uc))) {
+    if ((err = uc_open(UC_ARCH_X86, UC_MODE_64, &uc, 0))) {
         uc_perror("uc_open", err);
         return 1;
     }

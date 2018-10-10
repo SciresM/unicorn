@@ -945,7 +945,7 @@ static CPAccessResult gt_vtimer_access(CPUARMState *env, const ARMCPRegInfo *ri)
 
 static uint64_t gt_get_countervalue(CPUARMState *env)
 {
-    return qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) / GTIMER_SCALE;
+    return qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL) / (GTIMER_SCALE * 8);
 }
 
 static void gt_recalc_timer(ARMCPU *cpu, int timeridx)
@@ -2803,6 +2803,7 @@ static void add_cpreg_to_hashtable(ARMCPU *cpu, const ARMCPRegInfo *r,
      */
     uint32_t *key = g_new(uint32_t, 1);
     ARMCPRegInfo *r2 = g_memdup(r, sizeof(ARMCPRegInfo));
+
     int is64 = (r->type & ARM_CP_64BIT) ? 1 : 0;
     if (r->state == ARM_CP_STATE_BOTH && state == ARM_CP_STATE_AA32) {
         /* The AArch32 view of a shared register sees the lower 32 bits
@@ -2878,6 +2879,7 @@ static void add_cpreg_to_hashtable(ARMCPU *cpu, const ARMCPRegInfo *r,
             g_assert_not_reached();
         }
     }
+
     g_hash_table_insert(cpu->cp_regs, key, r2);
 }
 
@@ -4004,6 +4006,9 @@ static int get_phys_addr_lpae(CPUARMState *env, target_ulong address,
         t1sz = MIN(t1sz, 39);
         t1sz = MAX(t1sz, 16);
     }
+    
+    //printf("doing lpae on %llx, %x %x %x %x\n", address, t0sz, t1sz, extract64(address, va_size - t0sz, t0sz - tbi), extract64(~address, va_size - t1sz, t1sz - tbi));
+    
     if (t0sz && !extract64(address, va_size - t0sz, t0sz - tbi)) {
         /* there is a ttbr0 region and we are in it (high bits all zero) */
         ttbr_select = 0;
@@ -4164,6 +4169,8 @@ static int get_phys_addr_lpae(CPUARMState *env, target_ulong address,
         *prot &= ~PAGE_WRITE;
     }
 
+    //printf("good\n");
+
     *phys_ptr = descaddr;
     *page_size_ptr = page_size;
     return 0;
@@ -4262,6 +4269,7 @@ static inline int get_phys_addr(CPUARMState *env, target_ulong address,
                                 hwaddr *phys_ptr, int *prot,
                                 target_ulong *page_size)
 {
+    //printf("finding addr for %x\n", address);
     /* Fast Context Switch Extension.  */
     if (address < 0x02000000)
         address += env->cp15.c13_fcse;
